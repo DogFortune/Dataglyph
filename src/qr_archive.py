@@ -1,13 +1,11 @@
 import qrcode
 from qrcode.constants import ERROR_CORRECT_M
 import cv2
-import numpy as np
 import os
 import base64
 import argparse
 from pathlib import Path
 from pyzbar.pyzbar import decode
-from PIL import Image
 from tqdm import tqdm
 
 
@@ -37,7 +35,7 @@ def create_qr_codes(header, chunks, output_dir):
     # ヘッダー情報を含む最初のQRコード
     header_encoded = base64.b64encode(header)
     header_qr = qrcode.make(header_encoded)
-    header_qr.save(f"{output_dir}/header.png")
+    header_qr.save(str(Path(output_dir, "header.png")))
 
     # 各チャンクのQRコード
     for i, chunk in enumerate(tqdm(chunks, desc="create chunk qr code")):
@@ -56,7 +54,7 @@ def create_qr_codes(header, chunks, output_dir):
         qr.make(fit=True)
 
         img = qr.make_image(fill_color="black", back_color="white")
-        img.save(f"{output_dir}/chunk_{i+1:04d}.png")
+        img.save(str(Path(output_dir, f"chunk_{i+1:04d}.png")))
 
     print(f"作成されたQRコード: {total_chunks+1}個 (ヘッダー含む)")
 
@@ -75,7 +73,7 @@ def restore_file(qr_dir, output_dir):
     os.makedirs(output_dir, exist_ok=True)
 
     # ヘッダー情報の取得
-    header_data = read_qr_code(f"{qr_dir}/header.png")
+    header_data = read_qr_code(str(Path(qr_dir, "header.png")))
     if not header_data:
         print("ヘッダーQRコードを読み取れませんでした")
         return False
@@ -89,7 +87,7 @@ def restore_file(qr_dir, output_dir):
     chunks = []
 
     for chunk_file in tqdm(chunk_files, desc="restore"):
-        chunk_data = read_qr_code(f"{qr_dir}/{chunk_file}")
+        chunk_data = read_qr_code(str(Path(qr_dir, chunk_file)))
         if not chunk_data:
             print(f"QRコード {chunk_file} を読み取れませんでした")
             continue
@@ -110,7 +108,7 @@ def restore_file(qr_dir, output_dir):
             f"警告: 復元サイズが一致しません（期待: {file_size}, 実際: {len(restored_data)}）"
         )
 
-    output_path = f"{output_dir}/{file_name}"
+    output_path = str(Path(output_dir, file_name))
     with open(output_path, "wb") as f:
         f.write(restored_data)
 
