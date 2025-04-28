@@ -11,7 +11,7 @@ from PIL import Image
 from tqdm import tqdm
 
 
-def split_file(file_path, chunk_size=800):
+def split_file(file_path, chunk_size=1500):
     """ファイルを指定サイズのチャンクに分割"""
     with open(file_path, "rb") as f:
         data = f.read()
